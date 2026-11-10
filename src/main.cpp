@@ -1,3 +1,13 @@
+#include <Wire.h>
+#include <es8311.h>
+
+// Пины I2C и I2S для платы Xmini-C3
+#define I2C_SDA 8
+#define I2C_SCL 9
+#define I2S_BCK 6
+#define I2S_WS  5
+#define I2S_DO  7
+
 #include <Arduino.h>
 
 #include "audio_manager.h"
