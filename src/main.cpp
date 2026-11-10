@@ -118,6 +118,17 @@ void setup() {
     setup_display();
     setup_input();
 
+    // 1. Запуск шины I2C на пинах платы Xmini-C3
+Wire.begin(I2C_SDA, I2C_SCL);
+
+// 2. Инициализация кодека ES8311
+if (es8311_init(0x18) == ESP_OK) { // 0x18 — стандартный I2C адрес кодека
+    es8311_codec_config(AUDIO_BIT_WIDTH_16BIT, AUDIO_SAMPLE_RATE_44100HZ);
+    es8311_volume_set(85); // Установка громкости (0-100)
+    es8311_set_voice_mute(false);
+}
+
+
     // Если конфиг WiFi есть - пытаемся подключиться
     if (wifi_config_exists && connect_to_wifi()) {
         // --- РЕЖИМ НОРМАЛЬНОЙ РАБОТЫ (STA) ---
