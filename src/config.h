@@ -10,7 +10,7 @@
 #include "visualizer_styles.h"
 
 // ========================================
-// ESP32-C3 GPIO ПИНЫ
+// ESP32-C3 GPIO ПИНЫ ДЛЯ XMINI-C3 (XIAOZHI LITE)
 // ========================================
 // ДОСТУПНЫ ДЛЯ ИСПОЛЬЗОВАНИЯ: GPIO2-6, GPIO8-10, GPIO20-21
 //
@@ -21,11 +21,9 @@
 //   GPIO18-19       - USB D+/D- (если нативный USB включен)
 //
 // ИСПОЛЬЗУЕМЫЕ В ПРОЕКТЕ:
-//   GPIO2, 3, 10    - Энкодер KY-040
-//   GPIO4, 5, 6     - I2S (MAX98357A)
-//   GPIO8, 9        - I2C (OLED SSD1306)
-//
-// СВОБОДНЫЕ: GPIO20, GPIO21 (для будущих расширений)
+//   GPIO2, 3, 10    - Кнопки / Энкодер платы Xmini-C3
+//   GPIO6, 5, 7     - I2S Звуковой кодек ES8311
+//   GPIO8, 9        - I2C Экран OLED / Управление кодеком
 // ========================================
 
 // === OLED ДИСПЛЕЙ ===
@@ -40,15 +38,15 @@
 #define I2C_STANDARD_MODE_FREQ 100000 // Частота I2C Standard Mode (100kHz)
 #define I2C_RETRY_INTERVAL 5000 // Интервал повторных попыток инициализации OLED (мс)
 
-// === ПИНЫ ЭНКОДЕРА KY-040 ===
-#define ENCODER_CLK 10
+// === ПИНЫ ЭНКОДЕРА / КНОПОК ДЛЯ XMINI-C3 ===
+#define ENCODER_CLK 2
 #define ENCODER_DT 3
-#define ENCODER_SW 2
+#define ENCODER_SW 10
 
-// === ПИНЫ I2S ДЛЯ MAX98357A ===
-#define I2S_BCLK 4
+// === ПИНЫ I2S ДЛЯ АУДИОКОДЕКА ES8311 ===
+#define I2S_BCLK 6
 #define I2S_LRC 5
-#define I2S_DOUT 6
+#define I2S_DOUT 7
 
 // === ТАЙМАУТЫ И ИНТЕРВАЛЫ (в миллисекундах) ===
 #define AUDIO_BUFFER_SIZE 65536 // Размер буфера (64KB) - для медленного WiFi и buffer underflow
@@ -71,7 +69,7 @@
 
 #define SYSTEM_STATUS_INTERVAL 60000 // Интервал вывода статуса системы
 
-#define INPUT_DEBOUNCE_TIME 5 // Антидребезг энкодера (мс)
+#define INPUT_DEBOUNCE_TIME 5 // Anti-дребезг энкодера (мс)
 #define INPUT_SHORT_PRESS 300 // Короткое нажатие кнопки (мс)
 #define INPUT_LONG_PRESS 5000 // Долгое нажатие для выключения (мс)
 #define INPUT_DOUBLE_CLICK_DELAY 400 // Задержка для двойного клика (мс)
@@ -98,7 +96,7 @@
 
 // === SERIAL / DEBUG КОНФИГУРАЦИЯ ===
 #define SERIAL_BAUD_RATE 115200 // Скорость UART для Serial Monitor
-#define SERIAL_INIT_DELAY 2000 // Задержка при старте для инициализации Serial (мс)
+#define SERIAL_INIT_DELAY 2000 // Задержка при старте для初始化 Serial (мс)
 
 // === POWER MANAGEMENT ===
 #define POWER_STABILIZATION_DELAY 100 // Задержка стабилизации питания после включения (мс)
@@ -116,10 +114,10 @@ struct WiFiCredentials {
     bool fallbackEnabled = false;
 };
 
-extern WiFiCredentials wifiConfig; // Одна WiFi сеть (без backup)
+extern WiFiCredentials wifiConfig; 
 
 // === РАДИОСТАНЦИИ ===
-#define MAX_RADIO_STATIONS 25 // Максимальное количество радиостанций
+#define MAX_RADIO_STATIONS 25 
 
 struct RadioStation {
     String name;
@@ -131,31 +129,28 @@ extern std::vector<RadioStation> stations;
 extern int totalStations;
 
 // === ЗАЩИТА ОТ RACE CONDITION ===
-// Мьютекс для защиты stations вектора от одновременного доступа
-// из main loop (audio) и асинхронного веб-сервера
 extern SemaphoreHandle_t stationsMutex;
 
-// Макросы для безопасного доступа к stations
 #define STATIONS_LOCK() xSemaphoreTake(stationsMutex, portMAX_DELAY)
 #define STATIONS_UNLOCK() xSemaphoreGive(stationsMutex)
 
 // === УЧЕТНЫЕ ДАННЫЕ ВЕБ-ИНТЕРФЕЙСА ===
 struct WebCredentials {
     String username;
-    String passwordHash; // SHA256
+    String passwordHash; 
 };
 
 extern WebCredentials webCredentials;
 
 // === СТИЛЬ ВИЗУАЛИЗАТОРА ===
 extern VisualizerStyle visualizerStyle;
-extern uint8_t displayRotation; // 0=Normal, 2=Flipped 180°
+extern uint8_t displayRotation; 
 
 // === СЕССИЯ И АВТОЛОГИН ===
-#define SESSION_TOKEN_LENGTH 32 // Длина токена сессии (символов)
+#define SESSION_TOKEN_LENGTH 32 
 
-extern String sessionToken; // Токен для автоматического входа
-extern int rebootCounter; // Счетчик перезагрузок (очистка каждые 25)
+extern String sessionToken; 
+extern int rebootCounter; 
 
 // === ФУНКЦИИ УПРАВЛЕНИЯ КОНФИГУРАЦИЕЙ ===
 void setup_filesystem();
